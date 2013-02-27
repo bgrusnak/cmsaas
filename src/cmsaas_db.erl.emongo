@@ -1,0 +1,151 @@
+% ==========================================================================================================
+% CMSaaS - Content Management System as a Service
+%
+% @copyright 2013 BulgaRus BG LTD 
+% @author Ilya Shlyakhovoy  <info@cmsaas.info>
+% @version 0.3
+% All rights reserved.
+%
+% CC-Attribution License
+% 
+% Redistribution and use in source and binary forms, with or without modification, are permitted provided
+% that the following conditions are met:
+%
+%  * Redistributions of source code must retain the above copyright notice, this list of conditions and the
+%	 following disclaimer.
+%  * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+%	 the following disclaimer in the documentation and/or other materials provided with the distribution.
+%  * Neither the name of the authors nor the names of its contributors may be used to endorse or promote
+%	 products derived from this software without specific prior written permission.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+% WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+% ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+% TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+% HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+% ==========================================================================================================
+
+-module(cmsaas_db).
+
+-behaviour(gen_server).
+
+% includes
+-include("cmsaas.hrl").
+
+%% API
+-export([start_link/0, get_db/1]).
+
+%% gen_server callbacks
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2,
+		 terminate/2, code_change/3]).
+
+-define(SERVER, ?MODULE).
+
+get_connection(Database, User, Password, Hostname, Port, Workers) ->
+	Poolname = <<"pool:" , Hostname/binary, ":" ,Database/binary>>,
+	case emongo:get_pool(Poolname, binary:bin_to_list(Hostname), Port,  binary:bin_to_list(Database), Workers) of
+		{ok, Ans} ->
+			Poolname;
+		{error, {already_started, Ans2}} ->
+			Poolname;
+		{error, _} ->
+			undefined
+	end
+.	
+
+%get_connection(Database, User, Password, Hostname, Port, Workers) ->
+%	{ok, Conn}=mongo_connection:start_link ({binary:bin_to_list(Hostname), Port}, []),
+%	case mongo:do(safe, master, Conn, binary_to_atom(Database, utf8), fun() ->
+%		auth(User, Password) end) of
+%		true -> Conn;
+%		false -> false
+%	end
+%.
+
+-type username() :: bson:utf8().
+-type password() :: bson:utf8().
+-type nonce() :: bson:utf8().
+
+-spec auth (username(), password()) -> boolean(). % Action
+auth(Username, Password) ->
+	Nonce = bson:at (nonce, mongo:command ({getnonce, 1})),
+	try mongo:command ({authenticate, 1, user, Username, nonce, Nonce, key, pw_key (Nonce, Username, Password)})
+	of _ -> true
+	catch error:{bad_command, _} -> false end
+.
+
+-spec pw_key (nonce(), username(), password()) -> bson:utf8().
+pw_key (Nonce, Username, Password) -> bson:utf8 (binary_to_hexstr (crypto:md5 ([Nonce, Username, pw_hash (Username, Password)]))).
+
+-spec pw_hash (username(), password()) -> bson:utf8().
+pw_hash (Username, Password) -> bson:utf8 (binary_to_hexstr (crypto:md5 ([Username, <<":mongo:">>, Password]))).
+
+
+-spec binary_to_hexstr (binary()) -> string().
+binary_to_hexstr (Bin) ->
+lists:flatten ([io_lib:format ("~2.16.0b", [X]) || X <- binary_to_list (Bin)]).
+
+
+start_link() ->
+	gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+
+init([]) ->
+	{ok, {}}.
+
+getdb(Config) ->
+% take host properties
+	Host = treelists:get("db.host", Config),
+	Port = treelists:get("db.port", Config),
+% take workers count
+	Workers = treelists:get("db.workers", Config),
+%Creating Billing pool
+	Billing_db=treelists:get("db.billing", Config),
+	Billing_user=treelists:get("user", Billing_db),
+	Billing_pass=treelists:get("password", Billing_db),
+	Billing=#dbconfig{database=Billing_db, connector=get_connection(treelists:get("database", Billing_db), Billing_user, Billing_pass, Host, Port, Workers), user=Billing_user, password=Billing_pass},
+%Creating Sysbilling pool
+	Sysbilling_db=treelists:get("db.systembilling", Config),
+	Sysbilling_user=treelists:get("user", Sysbilling_db),
+	Sysbilling_pass=treelists:get("password", Sysbilling_db),
+	Sysbilling=#dbconfig{database=Sysbilling_db, connector=get_connection(treelists:get("database", Sysbilling_db), Sysbilling_user, Sysbilling_pass, Host, Port, Workers), user=Sysbilling_user, password=Sysbilling_pass},
+%Creating System pool
+	System_db=treelists:get("db.system", Config),
+	System_user=treelists:get("user", System_db),
+	System_pass=treelists:get("password", System_db),
+	System=#dbconfig{database=System_db, connector=get_connection(treelists:get("database", System_db), System_user, System_pass, Host, Port, Workers), user=System_user, password=System_pass},
+%Creating Content pool
+	Content_db=treelists:get("db.system", Config),
+	Content_user=treelists:get("user", Content_db),
+	Content_pass=treelists:get("password", Content_db),
+	Content=#dbconfig{database=Content_db, connector=get_connection(treelists:get("database", Content_db), Content_user, Content_pass, Host, Port, Workers), user=Content_user, password=Content_pass},
+% return db structure	
+	#dbaccess{host =Host, port =Port , workers=Workers, db=#dbset{content=Content, system=System, billing=Billing, sysbilling=Sysbilling}}
+. 	
+	
+handle_call({getdb, Config}, _From, State) ->
+%	Reply=try getdb(Config) of
+%		_X -> _X
+%	catch 
+%		error:_ -> undefined
+%	end,
+	Reply = getdb(Config),
+	{reply, Reply, State}
+.
+
+handle_cast(_Msg, State) ->
+	{noreply, State}.
+
+handle_info(_Info, State) ->
+	{noreply, State}.
+
+terminate(_Reason, _State) ->
+	ok.
+
+code_change(_OldVsn, State, _Extra) ->
+	{ok, State}.
+
+get_db(Config) ->
+	gen_server:call(?SERVER, {getdb, Config}).

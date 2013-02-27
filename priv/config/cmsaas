@@ -1,0 +1,15 @@
+{db,
+    [{
+        content,
+        [
+            {database, "cmsaas"},
+            {user, "cmsaas"},
+            {password, "cmsaas"}
+        ]
+    }]
+}.
+{host,[{name, "cmsaas"},
+         {charset, "UTF-8"},
+         {salt, "s45yafhweewr4sdw78j38"},
+         {cookie, "cmsaas.info"},
+         {timezone, "Europe/Sofia"}]}.

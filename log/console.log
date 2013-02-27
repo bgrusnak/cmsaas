@@ -1,0 +1,6 @@
+2013-01-20 22:28:11.151 [info] <0.6.0> Application lager started on node 'cmsaas@bgrusnak-VirtualBox'
+2013-01-20 22:28:11.171 [info] <0.6.0> Application mimetypes started on node 'cmsaas@bgrusnak-VirtualBox'
+2013-01-20 22:28:11.258 [info] <0.6.0> Application crypto started on node 'cmsaas@bgrusnak-VirtualBox'
+2013-01-20 22:28:11.270 [info] <0.6.0> Application public_key started on node 'cmsaas@bgrusnak-VirtualBox'
+2013-01-20 22:28:11.317 [info] <0.6.0> Application ssl started on node 'cmsaas@bgrusnak-VirtualBox'
+2013-01-20 22:28:11.350 [info] <0.6.0> Application cowboy started on node 'cmsaas@bgrusnak-VirtualBox'

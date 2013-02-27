@@ -1,0 +1,4 @@
+{start, cmsaas_callbacks, start}.
+{template, cmsaas_callbacks, template}.
+{authenify, cmsaas_callbacks, auth}.
+{process, cmsaas_callbacks, process}.

@@ -1,0 +1,20 @@
+{application, cmsaas, [
+	{description, "CMSaaS - CMS as a Service"},
+	{vsn, "0.3.0"},
+	{modules, []},
+	{registered, [l_sup]},
+	{applications, [
+		kernel,
+		stdlib,
+		crypto,
+		public_key,
+		ssl,
+		cowboy,
+		gproc,
+		esupervisor,
+		ossp_uuid
+	]},
+	{included_applications, [cowboy_session]},
+	{mod, {cmsaas_app, []}},
+	{env, []}
+]}.

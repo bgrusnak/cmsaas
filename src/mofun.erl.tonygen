@@ -1,0 +1,222 @@
+% ==========================================================================================================
+% CMSaaS - Content Management System as a Service
+%
+% @copyright 2013 BulgaRus BG LTD 
+% @author Ilya Shlyakhovoy  <info@cmsaas.info>
+% @version 0.3
+% All rights reserved.
+%
+% CC-Attribution License
+% 
+% Redistribution and use in source and binary forms, with or without modification, are permitted provided
+% that the following conditions are met:
+%
+%  * Redistributions of source code must retain the above copyright notice, this list of conditions and the
+%	 following disclaimer.
+%  * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+%	 the following disclaimer in the documentation and/or other materials provided with the distribution.
+%  * Neither the name of the authors nor the names of its contributors may be used to endorse or promote
+%	 products derived from this software without specific prior written permission.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+% WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+% ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+% TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+% HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+% ==========================================================================================================
+
+-module(mofun).
+
+-export([
+	insert/4,
+	update/5,
+	update/6,
+	update/7,
+	delete/4,
+	delete_one/4,
+	find_one/4,
+	find_one/5,
+	find_one/6,
+	find/4,
+	find/5,
+	find/6,
+	find/7,
+	count/4,
+	count/5,
+	ensure_index/4,
+	command/3
+]).
+
+insert(Connection, Db, Coll, Doc) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:insert(Coll, Doc) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+update(Connection, Db, Coll, Selector, Doc) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:update(Coll, Selector, Doc) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+update(Connection, Db, Coll, Selector, Doc, Upsert) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:update(Coll, Selector, Doc, Upsert) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+update(Connection, Db, Coll, Selector, Doc, Upsert, MultiUpdate) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:update(Coll, Selector, Doc, Upsert, MultiUpdate) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+delete(Connection, Db, Collection, Selector) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:delete(Collection, Selector) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+delete_one(Connection, Db, Collection, Selector) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:delete_one(Collection, Selector) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+
+find_one(Connection, Db, Collection, Selector) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:find_one(Collection, Selector) end) of
+		{} -> {};
+		{X} ->X ;
+		X -> X
+	end,
+	Rt
+.
+
+find_one(Connection, Db, Collection, Selector, Projector) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:find_one(Collection, Selector, Projector) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+find_one(Connection, Db, Collection, Selector, Projector, Skip) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:find_one(Collection, Selector, Projector, Skip) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+find(Connection, Db, Collection, Selector) ->
+	mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:count(Collection, Selector),
+		Cursor = mongo:find(Collection, Selector),
+        Result = mongo_cursor:rest(Cursor),
+        mongo_cursor:close(Cursor),
+        Result
+	end)
+.
+
+find(Connection, Db, Collection, Selector, Projector) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:find(Collection, Selector, Projector) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+find(Connection, Db, Collection, Selector, Projector, Skip) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:find(Collection, Selector, Projector, Skip) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+find(Connection, Db, Collection, Selector, Projector, Skip, BatchSize) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:find(Collection, Selector, Projector, Skip, BatchSize) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+count(Connection, Db, Collection, Selector) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:count(Collection, Selector) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+count(Connection, Db, Collection, Selector, Limit) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:count(Collection, Selector, Limit) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+ensure_index(Connection, Db, Collection, IndexSpec) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:ensure_index(Collection, IndexSpec) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.
+
+command(Connection, Db, Command) ->
+	 Rt=case mongo:do(safe, master, Connection, Db, fun() ->
+		mongo:command(Command) end) of
+		{} -> {};
+		{X} -> X;
+		X -> X
+	end,
+	Rt
+.

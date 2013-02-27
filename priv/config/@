@@ -1,0 +1,160 @@
+%% Server configuration
+{server,
+	[ 
+%% Server port	
+		{port, 8010}
+	]
+}.
+%% Default host configuration
+{host, 
+	[ 
+%% default host name	
+		{name, <<".default">>},
+%% parent domain or host 
+%% 		{parent, <<"parentdomain">>},		
+%% list of alias domains		
+		{aliases, [<<"localhost">>]},
+%% charset
+		{charset, "UTF-8"},
+%% salt for hashes	
+		{salt, <<"dr54lylsi7fusd98r7hyfcnc">>},
+%% cookie name	
+		{cookie, ".default"},
+%% site timezone	
+		{timezone, "GMT"},
+%% date format	
+		{date, "j/m/Y"},
+%% special pages
+		{pages, [
+%% error 404 page		
+			{error_404, "404.dtl"},
+%% on maintance page			
+			{maintance, "maintance.dtl"},
+%% redirect page			
+			{redirect, "redirect.dtl"},
+%% page for display in any other cases			
+			{default, "empty.dtl"}
+		]},
+%% is site on maintance		
+		{on_maintance, false},
+%% redirect settings, if needed (all external URL's from content will passed thru redirect)		
+		{redirect,
+			[
+%% redirect type: none - for the direct link , page - with display of a new page of site, external (TODO) - with link thru anonimizer
+				{type, <<"page">> },
+%% delay for the page redirect, in sec		
+				{delay, 5}
+			]
+		},
+%% how to process multilanguage sites
+		{multilanguage,
+			[
+%% URI request variable			
+				{variable, <<"use_language">> },
+%% List of priorities				
+%% S - session
+%% F - subdomain
+%% P - POST query
+%% G - Get query
+%% C - cookie
+%% D - directory
+%% H - host
+				{priority, <<"SFPGCDH">> },
+%% default language
+				{default, <<"en_EN">> },
+%% left and right brackets for the transliteration				
+				{brackets, [{left, <<"[[">>},{right, <<"]]">>}]}
+			]
+		}
+	]
+}.
+
+%% list of callbacks 		
+{callbacks, [start, language, ids, authenify, sanity, l10n, path, content, template, i18n, final]}.
+%% paths tree for the site, locating in priv/hostname
+{paths,
+        [
+%% templates directory        
+                {templates, <<"templates">>},
+%% compiled templates directory        
+                {compiled, <<"ctemplates">>},
+%% site cache directory
+                {cache, <<"cache">>},
+%% static content of the site - scripts, images etc
+                {static, <<"static">>},
+%% uploads for the site                
+                {uploads, <<"content">>},
+%% place for the other temporary content
+                {tmp, <<"tmp">>}
+        ]
+}.
+%% special paths, aka covers, for the service needs
+%% first atom is a pathname - like http://sample.com/admin -> admin
+%% for example, for the {'static/admin', <<".backend">>} tuple
+%% the page from http://sample.com/static/admin/index.html will be shown from http://.backend/static/admin/index.html
+%% all paths, started from 'static', will be parsed by http_static handler, and show the static files
+{covers,
+        [
+                {'static/admin', <<".backend">>},
+                {'admin', <<".backend">>},
+                {'static/stat', <<".stats">>},
+                {'stat', <<".stats">>}
+        ]
+}.
+%% parameters for the authenification
+{auth,
+        [
+%%  login field name    
+                {login, <<"login">>},
+%%  password field name    
+                {password, <<"password">>},
+%%  method    
+                {method, <<"POST">>}
+        ]
+}.
+%% db access configuration
+{db,
+	[
+%% db type (currently mongodb only
+		{dbtype, mongodb},
+%% db host	
+		{host, <<"localhost">>},
+%% db port		
+		{port, 27017},
+%% num of db workers 		
+		{workers, 10},
+		{
+%% connection to the system billing db (usual read only) 		
+			billing,
+			[
+				{database, <<"billing">>},
+				{user, <<"cmsaas">>},
+				{password, <<"cmsaas">>}
+			]
+		}, {
+%% connection to the system db (usual read only) 
+			system,
+			[
+				{database, <<"service">>},
+				{user, <<"cmsaas">>},
+				{password, <<"cmsaas">>}
+			]
+		}, {
+%% connection to the content db		
+			content,
+			[
+				{database, <<"cmsaas">>},
+				{user, <<"cmsaas">>},
+				{password, <<"cmsaas">>}
+			]
+		}
+	]
+}.
+%% memcached connection
+{memcached,
+	[
+        {host, <<"localhost">>},
+        {port, 11211},
+		{expiration, 2591999}
+	]
+}.

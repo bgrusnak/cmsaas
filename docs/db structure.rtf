@@ -1,0 +1,65 @@
+﻿CMSaaS db structure
+«service» - common db for the service data — read-only for all except system admin
+«tariffs» collection
+«name» string — Name of the tariff. 
+«paydays» int — Number of the days between payments
+«price» float — The price in internal units for the single payment
+«public» boolean — Can this tariff be used for the non-administrative users
+«pays» collection
+«user» ObjectId — Id of the payer
+«paydate» string — Date of the payment
+«amount» float — Summ of the payment in internal units
+«paysystem» string — The payment processing system
+«original» float — Summ of the payment in the real currency
+«currency» string — The currency of the payment
+«users» collection
+«name» string — User name
+«email» string — User email
+«amount» float — The internal balance in internal units
+«domains» collection
+«name» string — The name of the domain
+«owner» ObjectId — Id of the the user owner
+«paidto» string — Date of the end of the payment
+«autorenew» boolean — Will be renewed payment or not
+«tariff» ObjectId — The payment tariff
+«active» boolean — Is this domain active or blocked
+«billing» - common db for the billing data — read-only for all except system admin
+Ss
+«panel» - db for the admin panel services — read-only for all except system admin
+Ss
+«XXX» - db with content for the host XXX — same as the «panel» db
+«core.users» collection — the collection of users, available for this host (not the same as system users)
+«login» string — User login (user can be authenified by email or login)
+«name» string — User name
+«email» string — User email
+«password» string — Hash of the salt, login and password
+«groups» array — Array of groups, contains user  
+«core.groups» collection — the collection of user groups, available for this host (not the same as system groups)
+«name» string — User name
+«users» array — Array of ObjectId values of users from core.users collection
+«core.rigths» collection — the collection of rights
+«path» string — Path to the collection or collection item (can use * for ANY items)
+«users» array — Array of ObjectId values of users from core.users collection
+«groups» array — Array of ObjectId values of user groups from core.groups collection
+«RIGHT» boolean — The right definition and it's state (RIGHT can be «create», «read», «update», «delete») - only one right definition for record
+«core.paths» collection — the collection of path resolving records
+«path» string — REGEX-friendly path processing string, path to the document 
+«document» ObjectId — Id of record from data.pages collection
+«master» integer — Number, defines the majority of the path (the 0 is better)
+«strict» boolean — Can this path resolve subpaths authomatically (strict=false) or only current path defined (strict=true)
+«version» integer — Number of document version
+«data.pages» collection — the collection of page description records
+«design» string — Name of the DTL template file for the page
+«items» array — Array of ObjectId values of  XX from data.items collection
+«template» string — ObjectId of the template document from data.pages collection for the page
+«title» string — Title for the page
+«meta» array — Array of meta fields for the page, by default it's a 
+	«description» string – Description
+	«keywords» array – Array of strings with keywords
+«data.XXX» collection — the collection of XXX records
+«title» string — name of the template file for the page
+«title» string — name of the template file for the page
+«title» string — name of the template file for the page
+«design» string — name of the template file for the page
+
+
